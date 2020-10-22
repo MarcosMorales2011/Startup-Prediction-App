@@ -1,114 +1,182 @@
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-
+import dash
 from joblib import load
 import numpy as np
 import pandas as pd
 
+from sklearn.linear_model import LogisticRegression
+
+pipeline = load('model/new_pipeline.joblib')
+
 from app import app
 
-loan_purposes = ['Business',
-                 'Car financing',
-                 'Credit card refinancing',
-                 'Debt consolidation',
-                 'Green loan',
-                 'Home buying',
-                 'Home improvement',
-                 'Major purchase',
-                 'Medical expenses',
-                 'Moving and relocation',
-                 'Other',
-                 'Vacation']
+genders = [ 'Male', 
+            'Female', 
+            'Client refused',     
+            'Trans Male (FTM or Female to Male)',
+            'Trans Female (MTF or Male to Female)'
+            ]
 
-style = {'padding': '1.5em'}
+insurances = ['Yes', 
+             'No', 
+             'Data Not Collected', 
+             'Client refused', 
+             "Client doesn't know"
+             ]            
+
+homeless3years = [
+             'One time', 
+             'Two times', 
+             'Three times',
+             'Four or more times',
+             'Data not collected',             
+             'Client refused',          
+             "Client doesn't know"
+             ]             
 
 layout = html.Div([
     dcc.Markdown("""
         ### Predict
-
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+        Use the controls below to predict exit destination of a family based off of features declared by the head of household which proved to have high significance in my prediction model
     
     """), 
 
-    html.Div([
-        dcc.Markdown('###### Annual Income'), 
-        dcc.Slider(
-            id='annual-income', 
-            min=20000,
-            max=200000,
-            step=5000,
-            value=65000, 
-            marks={n: f'{n/1000:.0f}k' for n in range(20000,220000,20000)} 
-        ), 
-    ], style=style), 
+    
+dbc.Col(
+    [
 
-    html.Div([
-        dcc.Markdown('###### Credit Score'), 
-        dcc.Slider(
-            id='credit-score', 
-            min=650,
-            max=850, 
-            step=10, 
-            value=700, 
-            marks={n: str(n) for n in range(650,900,50)}
-        ),
-    ], style=style), 
+        
 
-    html.Div([
-        dcc.Markdown('###### Loan Amount'), 
-        dcc.Slider(
-            id='loan-amount', 
-            min=1000, 
-            max=40000, 
-            step=1000, 
-            value=10000, 
-            marks={n: f'{n/1000:.0f}k' for n in range(5000,45000,5000)}
-        ),  
-    ], style=style),
+        html.H1('Adjust features below to predict the exit destination of household', className='mb-5'), 
+        html.Div(id='prediction-content', className='lead'),
 
-    html.Div([
-        dcc.Markdown('###### Loan Purpose'), 
+
+
+        dcc.Markdown('## Predictions', className='mb-5'), 
+
+        dcc.Markdown('###### Reported Gender'), 
         dcc.Dropdown(
-            id='loan-purpose', 
-            options=[{'label': purpose, 'value': purpose} for purpose in loan_purposes], 
-            value=loan_purposes[0]
+            id='gender', 
+            options=[{'label': purpose, 'value': purpose} for purpose in genders], 
+            value=genders[0]
         ), 
-    ], style=style),
 
-    html.Div([
-        dcc.Markdown('###### Monthly Debts'), 
+        dcc.Markdown('###### Covered by Health Insurance'), 
+        dcc.Dropdown(
+            id='insurance', 
+            options=[{'label': purpose, 'value': purpose} for purpose in insurances], 
+            value=insurances[0]
+        ), 
+
+        dcc.Markdown('###### How many times homeless in the last 3 years'), 
+        dcc.Dropdown(
+            id='timeshomeless', 
+            options=[{'label': purpose, 'value': purpose} for purpose in homeless3years], 
+            value=genders[0]
+        ), 
+        
+        dcc.Markdown('#### Income at Entry'), 
         dcc.Slider(
-            id='monthly-debts', 
+            id='entry_income', 
             min=0, 
-            max=5000, 
+            max=3000, 
             step=100, 
-            value=1000, 
-            marks={n: str(n) for n in range(500,5500,500)}
-        )
-    ], style=style),
+            value=0,
+            marks={n: str(n) for n in range(0,3000,100)}, 
+            className='mb-5', 
+        ), 
+        html.Div(id='slider-output-container'),
 
-    dcc.Markdown('### Prediction'), 
-    html.Div(id='prediction-content', style={'marginBottom': '5em'}), 
+        dcc.Markdown('#### Length of Time Homeless in days'), 
+        dcc.Slider(
+            id='length_homeless', 
+            min=0, 
+            max=400, 
+            step=10, 
+            value=0,
+            marks={n: str(n) for n in range(0,400,10)}, 
+            className='mb-5', 
+        ), 
 
+        html.Div(id='slider-output-container'),
+        
+        dcc.Markdown('#### Total HouseHold Size'), 
+        dcc.Slider(
+            id='CaseMembers', 
+            min=1, 
+            max=10, 
+            step=1, 
+            value=1,
+            marks={n: str(n) for n in range(1,10,1)}, 
+            className='mb-5', 
+        ), 
+
+        html.Div(id='slider-output-container'),
+
+        dcc.Markdown('#### Age at Enrollment'), 
+        dcc.Slider(
+            id='Age_at_Enrollment', 
+            min=18, 
+            max=65, 
+            step=1, 
+            value=25,
+            marks={n: str(n) for n in range(18,65,1)}, 
+            className='mb-5', 
+        ), 
+        html.Div(id='slider-output-container'),
+
+    ],
+    md=4,
+)
 ])
+dbc.Col(
+    [
+        html.H2('Exit To Permanent Housing', className='mb-5'), 
+        html.Div(id='prediction-content', className='lead')
+    ]
+)
+
+import pandas as pd
+
+
 
 @app.callback(
-    Output('prediction-content', 'children'),
-    [Input('annual-income', 'value'),
-     Input('credit-score', 'value'),
-     Input('loan-amount', 'value'),
-     Input('loan-purpose', 'value'),
-     Input('monthly-debts', 'value')])
-def predict(annual_income, credit_score, loan_amount, loan_purpose, monthly_debts):
-
+    dash.dependencies.Output('prediction-content', 'children'),
+    [dash.dependencies.Input('entry_income', 'value'), dash.dependencies.Input('length_homeless', 'value'), 
+    dash.dependencies.Input('CaseMembers', 'value'), dash.dependencies.Input('Age_at_Enrollment', 'value'),
+    dash.dependencies.Input('gender', 'value'), dash.dependencies.Input('insurance', 'value'),
+    dash.dependencies.Input('timeshomeless', 'value')],
+)
+def predict(entry_income, length_homeless, CaseMembers, Age_at_Enrollment, gender, insurance, timeshomeless):
     df = pd.DataFrame(
-        columns=['Annual Income', 'Credit Score', 'Loan Amount', 'Loan Purpose', 'Monthly Debts'], 
-        data=[[annual_income, credit_score, loan_amount, loan_purpose, monthly_debts]]
+        data=[[np.NaN, np.NaN, 'operation', np.NaN, np.NaN, 'No', np.NaN, 
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, 
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, 
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
+        np.NaN, np.NaN]]
     )
-
-    pipeline = load('model/pipeline.joblib')
-    y_pred_log = pipeline.predict(df)
-    y_pred = np.expm1(y_pred_log)[0]
-
-    return f'Interest rate for 36 month loan: {y_pred:.2f}%'
+    
+    y_pred = pipeline.predict(df)
+    
+    if y_pred > 0:
+        return "Your startup is more likely to succeed."
+    else:
+        return "Your startup is likely to fail."

@@ -3,11 +3,28 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 from app import app
+colors = {
+    'background': '#111111',
+    'text': '#7FDBFF'
+}
 
 layout = dcc.Markdown("""
-### Intro
+## Startup Prediction
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer suscipit ornare dolor in venenatis. Nunc dapibus elementum ligula, sed pharetra turpis tempor vel. Pellentesque dui tellus, euismod vel libero in, volutpat pretium felis. Sed sit amet purus et tellus tincidunt finibus. Integer augue odio, pharetra at placerat ut, venenatis nec erat. Integer eu malesuada nisl. Nam vestibulum, elit quis pharetra luctus, massa nulla cursus augue, in tristique mi ipsum id nisi. Fusce fringilla tortor elit, quis lacinia est molestie id. Nullam consectetur elit at porta faucibus. In feugiat, mauris ut dignissim ultrices, odio ex viverra ante, ac pulvinar libero mauris facilisis diam. Fusce at efficitur urna, in varius nisl. Pellentesque lectus odio, pellentesque sed lacinia eu, placerat et mauris. Sed id mi at dui aliquet dapibus non nec justo.
+What causes a startup to succeed or fail? Startups, or new established businesses, arise commonly in today's economy. In fact, according to SBA estimates, around 627,000 new businesses open each year. But, even if many try to make their own businessess, that does not mean that they are all successful about it. According to investopedia, it is estimated that every eight in ten business end up closing shop within 10 years. 
 
-Phasellus sodales vehicula nisi sit amet tincidunt. Integer mattis, lacus vitae tempor congue, tellus nulla congue lectus, id facilisis enim nunc eu arcu. Suspendisse vehicula metus non urna congue, ac fringilla dolor venenatis. Nulla facilisi. Etiam ornare ipsum id massa dictum, sit amet porttitor neque vehicula. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam a purus vulputate leo egestas consectetur in nec augue.
+
+But what's causing that 20% to find success? This wep application is here to attempt to answer the problem. From a dataset sourced from kaggle.com, over 400 different startups' data was recorded, including features such as their year of funding, their internet activity score, and wether that startup succeeded or failed.  
+
+
+Using Machine Learning, I'vre created a model that utilizes the startup's information in order to predict if it will fail or succeed. These are the following tabs for the webapp:
+
+
+Process: Goes into the inner working of the model as well as the data science / machine learning aspect of it
+
+
+Insights: Showcases a graph of the predicted classifications versus the actual classifications, as well as provide some further visualizations.
+
+
+Predict: Work with the model directly as you input the required features, and get back the probability of your startup succeeding!
 """)
